@@ -1,0 +1,59 @@
+{
+  "title": "UrbanHeat - Smart City",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Sensores con lectura",
+      "gridPos": {"x":0,"y":0,"w":6,"h":4},
+      "targets": [{
+        "format": "table",
+        "rawSql": "SELECT COUNT(*) AS value FROM latest_measurements",
+        "refId": "A"
+      }]
+    },
+    {
+      "type": "stat",
+      "title": "Temperatura máxima reciente",
+      "gridPos": {"x":6,"y":0,"w":6,"h":4},
+      "targets": [{
+        "format": "table",
+        "rawSql": "SELECT COALESCE(MAX(temperature),0) AS value FROM latest_measurements",
+        "refId": "A"
+      }]
+    },
+    {
+      "type": "table",
+      "title": "Últimas mediciones",
+      "gridPos": {"x":0,"y":4,"w":12,"h":8},
+      "targets": [{
+        "format": "table",
+        "rawSql": "SELECT lm.event_timestamp, lm.device_id, d.district, d.zone_type, lm.temperature, lm.humidity, lm.battery_level FROM latest_measurements lm JOIN devices d ON d.device_id = lm.device_id ORDER BY lm.event_timestamp DESC LIMIT 50",
+        "refId": "A"
+      }]
+    },
+    {
+      "type": "timeseries",
+      "title": "Temperatura por distrito",
+      "gridPos": {"x":0,"y":12,"w":12,"h":8},
+      "targets": [{
+        "format": "time_series",
+        "rawSql": "SELECT bucket_start AS time, district AS metric, avg_temperature AS value FROM hourly_metrics WHERE $__timeFilter(bucket_start) ORDER BY 1",
+        "refId": "A"
+      }]
+    },
+    {
+      "type": "table",
+      "title": "Alertas",
+      "gridPos": {"x":0,"y":20,"w":12,"h":7},
+      "targets": [{
+        "format": "table",
+        "rawSql": "SELECT created_at, alert_type, severity, district, device_id, temperature, message FROM alerts ORDER BY created_at DESC LIMIT 50",
+        "refId": "A"
+      }]
+    }
+  ]
+}
